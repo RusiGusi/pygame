@@ -157,10 +157,11 @@ class Game:
             raise "Collision Occurred"
         # врезается в себя
         for i in range(1, self.snake.length):
-            if self.is_collision(self.snake.x[0], self.snake.y[0], self.snake.x[i], self.snake.y[i]):
-                self.play_sound('crash')
-                self.lose = True
-                raise "Collision Occurred"
+            if self.snake.length != 100:
+                if self.is_collision(self.snake.x[0], self.snake.y[0], self.snake.x[i], self.snake.y[i]):
+                    self.play_sound('crash')
+                    self.lose = True
+                    raise "Collision Occurred"
 
     def menu(self):
         self.start = True
@@ -170,7 +171,7 @@ class Game:
         self.render_background()
         line = font.render("MAIN MENU", True, (255, 255, 255))
         self.surface.blit(line, (400, 200))
-        line = font.render(f"Your current score is {self.snake.length}", True, (255, 255, 255))
+        line = font.render(f"Your best score is {self.snake.length}", True, (255, 255, 255))
         self.surface.blit(line, (320, 250))
         line = font.render(f"If you want to start - press Q",
                            True, (255, 255, 255))
@@ -227,6 +228,34 @@ class Game:
         self.surface.blit(score, (820, 40))
         self.surface.blit(maxi, (820, 80))
 
+    def win(self):
+        self.win1 = True
+        self.game_started = 0
+        self.render_background()
+        font = pygame.font.SysFont('8-BIT WONDER.TTF', 100)
+        self.render_background()
+        line = font.render("YOU WIN!!!!", True, (255, 255, 255))
+        self.surface.blit(line, (350, 200))
+        line = font.render(f"Q - restart, ESCAPE - quiting",
+                           True, (255, 255, 255))
+        self.surface.blit(line, (20, 550))
+        pygame.display.flip()
+        self.a = self.snake.length
+        ff = open('save.txt', 'w')
+        ff.write('1')
+        ff.close()
+        while self.win1:
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_q:
+                        self.win1 = False
+                        self.snake.length = 1
+                        self.play()
+                    if event.key == K_ESCAPE:
+                        pygame.quit()
+                elif event.type == QUIT:
+                    pygame.quit()
+
     def show_game_over(self):
         self.render_background()
         font = pygame.font.SysFont('8-BIT WONDER.TTF', 30)
@@ -249,6 +278,11 @@ class Game:
         pause1 = False
         running = True
         while running:
+            if self.snake.length == 100:
+                pygame.mixer.music.play()
+                pause = False
+                pause1 = False
+                self.win()
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
@@ -281,6 +315,7 @@ class Game:
                                 pygame.mixer.music.unpause()
                 elif event.type == QUIT:
                     running = False
+
             try:
                 if not pause and not pause1:
                     if self.game_started > 0:
